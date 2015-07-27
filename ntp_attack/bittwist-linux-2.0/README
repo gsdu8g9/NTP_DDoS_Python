@@ -1,0 +1,18 @@
+Bit-Twist: Libpcap-based Ethernet packet generator
+
+Supported platforms:
+This distribution is tested to work on CentOS release 6.2.
+
+Dependencies:
+Libpcap is required (available for download from http://www.tcpdump.org).
+This distribution is compiled against libpcap 1.2.1.
+
+Installation:
+- tar -xzf bittwist-linux-2.0.tar.gz (you are most likely to have done this by now)
+- cd bittwist-linux-2.0
+- make
+- sudo make install
+Binaries (bittwist, bittwiste) are installed in /usr/bin
+Manual pages (bittwist.1, bittwiste.1) are installed in /usr/share/man/man1
+
+For more information, please visit Bit-Twist homepage at http://bittwist.sourceforge.net

@@ -1,0 +1,338 @@
+<!-- Generated with the following steps:
+1) nroff -man bittwist.1
+2) Copy the output from console into this file between the opening and closing pre tag
+3) Replace dash character
+4) Encode less than and greater than character -->
+<pre>
+BITTWISTE(1)                                                      BITTWISTE(1)
+
+
+
+NAME
+       bittwiste -- pcap capture file editor
+
+SYNOPSIS
+       bittwiste [ -I input ] [ -O output ] [ -L layer ] [ -X payload ]
+                 [ -C ] [ -M linktype ] [ -D offset ] [ -R range ]
+                 [ -S timeframe ] [ -T header ]
+                 [ header-specific-options ] [ -h ]
+
+DESCRIPTION
+       This document describes the bittwiste program, the pcap(3) capture file
+       editor. Bittwiste is designed to work only with  Ethernet  frame,  e.g.
+       link  type  DLT_EN10MB  in  pcap(3),  with a maximum frame size of 1514
+       bytes which is equivalent to a MTU of 1500 bytes, 14 bytes for Ethernet
+       header.
+
+       Bittwiste  can  currently  edit  Ethernet,  ARP, IP, ICMP, TCP, and UDP
+       headers. If run with the -X flag, you can append your own payload after
+       any  of  these  headers;  specified using the -L and -T flag. Bittwiste
+       will, if not run with the -C flag, recalculate the  checksums  for  IP,
+       ICMP,  TCP,  and  UDP  packets, except for the last fragment of a frag-
+       mented IP datagram; bittwiste does not currently support checksum  cor-
+       rection  for the last fragment of a fragmented IP datagram. While pars-
+       ing the packets in a trace file, bittwiste will  skip,  i.e.  write  to
+       output  file  as  is, any truncated packet, for example, an ICMP packet
+       with a captured length of 25 bytes (we need at least 28 bytes; 14 bytes
+       for  Ethernet  header,  minimum 20 bytes for IP header, and 4 bytes for
+       ICMP header) does not give enough information on its  ICMP  header  for
+       bittwiste  to  read and modify it. In this case, you can utilize the -L
+       and -T flag to copy the original packet up to its IP header and  append
+       your  customized  ICMP header and data to the packet using the -X flag.
+       When specifying payload that covers the ICMP, TCP or UDP header and its
+       data, you can use zeros, e.g. 0000 for 2 bytes of zeros, for the header
+       checksum which is then corrected automatically by bittwiste.
+
+       In order to simplify the way options are specified, you can  only  edit
+       packets  of  a  specific  type supplied to the -T flag per execution of
+       bittwiste on a trace file. In addition, the -T flag  must  appear  last
+       among  the general options which are the -I, -O, -L, -X, -C, -M, -D, -R
+       and -S flag.
+
+OPTIONS
+       -I input
+              Input pcap based trace file.
+
+       -O output
+              Output trace file.
+
+       -L layer
+              Copy up to the specified layer and discard the  remaining  data.
+              Value for layer must be either 2, 3 or 4 where 2 for Ethernet, 3
+              for ARP or IP, and 4 for ICMP, TCP or UDP.
+
+       -X payload
+              Append payload in hex digits to the end of each packet.
+              Example: -X 0302aad1
+              -X flag is ignored if -L and -T flag are not specified.
+
+       -C     Specify this flag to disable checksum correction. Checksum  cor-
+              rection  is applicable for non-fragmented IP, ICMP, TCP, and UDP
+              packets only.
+
+       -M linktype
+              Replace the linktype stored in the pcap file header.  Typically,
+              value for linktype is 1 for Ethernet.
+              Example: -M 12 (for raw IP), -M 51 (for PPPoE)
+
+              For the complete list, see:
+              http://www.tcpdump.org/linktypes.html
+
+       -D offset
+              Delete the specified byte offset from each packet.
+              First byte (starting from link layer header) starts from 1.
+              -L, -X, -C and -T flag are ignored if -D flag is specified.
+              Example: -D 15-40, -D 10 or -D 18-9999
+
+       -R range
+              Save only the specified range of packets.
+              Example: -R 5-21 or -R 9
+
+       -S timeframe
+              Save  only the packets within the specified timeframe with up to
+              one-second resolution using DD/MM/YYYY,HH:MM:SS  as  the  format
+              for start and end time in timeframe.
+              Example: -S 22/10/2006,21:47:35-24/10/2006,13:16:05
+              -S flag is evaluated after -R flag.
+
+       -T header
+              Edit  only  the  specified  header. Possible keywords for header
+              are, eth, arp, ip, icmp, tcp, or udp. -T flag must  appear  last
+              among the general options.
+
+       -h     Print version information and usage.
+
+       header-specific-options
+              Each  packet  that  matches  the type supplied to the -T flag is
+              modified based on the options described below:
+
+              Options for eth (RFC 894):
+
+              -d dmac or omac,nmac
+                     Destination MAC address. Example: -d 00:08:55:64:65:6a
+                     If omac and nmac are specified instead, all occurences of
+                     omac  in  the  destination  MAC  address  field  will  be
+                     replaced with nmac.
+
+              -s smac or omac,nmac
+                     Source MAC address. Example: -s 00:13:20:3e:ab:cf
+                     If omac and nmac are specified instead, all occurences of
+                     omac  in  the  source  MAC address field will be replaced
+                     with nmac.
+
+              -t type
+                     EtherType. Possible keywords for type  are,  ip  and  arp
+                     only.
+
+              Options for arp (RFC 826):
+
+              -o opcode
+                     Operation  code  in integer value between 0 to 65535. For
+                     example, you can set opcode to 1 for ARP request,  2  for
+                     ARP reply.
+
+              -s smac or omac,nmac
+                     Sender MAC address. Example: -s 00:13:20:3e:ab:cf
+                     If omac and nmac are specified instead, all occurences of
+                     omac in the sender MAC address  field  will  be  replaced
+                     with nmac.
+
+              -p sip or oip,nip
+                     Sender IP address. Example: -p 192.168.0.1
+                     If  oip  and nip are specified instead, all occurences of
+                     oip in the sender IP address field will be replaced  with
+                     nip.
+
+              -t tmac or omac,nmac
+                     Target MAC address. Example: -t 00:08:55:64:65:6a
+                     If omac and nmac are specified instead, all occurences of
+                     omac in the target MAC address  field  will  be  replaced
+                     with nmac.
+
+              -q tip or oip,nip
+                     Target IP address. Example: -q 192.168.0.2
+                     If  oip  and nip are specified instead, all occurences of
+                     oip in the target IP address field will be replaced  with
+                     nip.
+
+              Options for ip (RFC 791):
+
+              -i id
+                     Identification in integer value between 0 to 65535.
+
+              -f flags
+                     Control flags. Possible characters for flags are:
+
+                     - : remove all flags
+                     r : set the reserved flag
+                     d : set the don’t fragment flag
+                     m : set the more fragment flag
+
+                     Example: -f d
+                     If  any of the flags is specified, all original flags are
+                     removed automatically.
+
+              -o offset
+                     Fragment offset in integer value between 0 to 7770. Value
+                     for  offset represents the number of 64-bit segments con-
+                     tained in earlier fragments which must  not  exceed  7770
+                     (62160 bytes).
+
+              -t ttl
+                     Time to live in integer value between 0 to 255 (millisec-
+                     onds).
+
+              -p proto
+                     Protocol number in integer value between 0 to  255.  Some
+                     common protocol numbers are:
+
+                     1  : Internet Control Message Protocol (ICMP)
+                     6  : Transmission Control Protocol (TCP)
+                     17 : User Datagram Protocol (UDP)
+
+                     For the complete list, see:
+                     http://www.iana.org/assignments/protocol-numbers
+
+              -s sip or oip,nip
+                     Source IP address. Example: -s 192.168.0.1
+                     If  oip  and nip are specified instead, all occurences of
+                     oip in the source IP address field will be replaced  with
+                     nip.
+
+              -d dip or oip,nip
+                     Destination IP address. Example: -d 192.168.0.2
+                     If  oip  and nip are specified instead, all occurences of
+                     oip in the destination IP address field will be  replaced
+                     with nip.
+
+              Options for icmp (RFC 792):
+
+              -t type
+                     Type  of  message in integer value between 0 to 255. Some
+                     common messages are:
+
+                     0  : Echo reply
+                     3  : Destination unreachable
+                     8  : Echo
+                     11 : Time exceeded
+
+                     For the complete list, see:
+                     http://www.iana.org/assignments/icmp-parameters
+
+              -c code
+                     Error code for this ICMP message in integer value between
+                     0 to 255. For example, code for time exceeded message may
+                     have one of the following values:
+
+                     0 : transit TTL exceeded
+                     1 : reassembly TTL exceeded
+
+                     For the complete list, see:
+                     http://www.iana.org/assignments/icmp-parameters
+
+              Options for tcp (RFC 793):
+
+              -s sport or op,np
+                     Source port number in integer value between 0  to  65535.
+                     If op and np are specified instead, all occurrences of op
+                     in the source port field will be replaced with np.
+
+              -d dport or op,np
+                     Destination port number in integer  value  between  0  to
+                     65535.  If  op  and  np are specified instead, all occur-
+                     rences of op  in  the  destination  port  field  will  be
+                     replaced with np.
+
+              -q seq
+                     Sequence number in integer value between 0 to 4294967295.
+                     If SYN control bit is set, e.g. character s  is  supplied
+                     to  the -f flag, seq represents the initial sequence num-
+                     ber (ISN) and the first data byte is ISN + 1.
+
+              -a ack
+                     Acknowledgment number  in  integer  value  between  0  to
+                     4294967295.  If  ACK control bit is set, e.g. character a
+                     is supplied to the -f flag, ack represents the  value  of
+                     the  next  sequence number that the receiver is expecting
+                     to receive.
+
+              -f flags
+                     Control flags. Possible characters for flags are:
+
+                     - : remove all flags
+                     u : urgent pointer field is significant
+                     a : acknowledgment field is significant
+                     p : push function
+                     r : resets the connection
+                     s : synchronizes the sequence numbers
+                     f : no more data from sender
+
+                     Example: -f s
+                     If any of the flags is specified, all original flags  are
+                     removed automatically.
+
+              -w win
+                     Window  size  in integer value between 0 to 65535. If ACK
+                     control bit is set, e.g. character a is supplied  to  the
+                     -f  flag, win represents the number of data bytes, begin-
+                     ning with the one indicated in the acknowledgment  number
+                     field that the receiver is willing to accept.
+
+              -u urg
+                     Urgent  pointer  in  integer value between 0 to 65535. If
+                     URG control bit is set, e.g. character u is  supplied  to
+                     the  -f flag, urg represents a pointer that points to the
+                     first data byte following the urgent data.
+
+              Options for udp (RFC 768):
+
+              -s sport or op,np
+                     Source port number in integer value between 0  to  65535.
+                     If op and np are specified instead, all occurrences of op
+                     in the source port field will be replaced with np.
+
+              -d dport or op,np
+                     Destination port number in integer  value  between  0  to
+                     65535.  If  op  and  np are specified instead, all occur-
+                     rences of op  in  the  destination  port  field  will  be
+                     replaced with np.
+
+SEE ALSO
+       bittwist(1), pcap(3), tcpdump(1)
+
+BUGS
+       File your bug report and send to:
+
+              Addy Yeow Chin Heng &lt;ayeowch@gmail.com&gt;
+
+       Make  sure  you  are  using the latest stable version before submitting
+       your bug report.
+
+COPYRIGHT
+       Copyright (C) 2006 - 2012 Addy Yeow Chin Heng &lt;ayeowch@gmail.com&gt;
+
+       This program is free software; you can redistribute it and/or modify it
+       under  the  terms of the GNU General Public License as published by the
+       Free Software Foundation; either version 2 of the License, or any later
+       version.
+
+       This  program  is  distributed  in the hope that it will be useful, but
+       WITHOUT ANY  WARRANTY;  without  even  the  implied  warranty  of  MER-
+       CHANTABILITY  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+       Public License for more details.
+
+       You should have received a copy of the GNU General Public License along
+       with this program; if not, write to the Free Software Foundation, Inc.,
+       51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+AUTHORS
+       Original author and current maintainer:
+
+              Addy Yeow Chin Heng
+
+       The current version is available from http://bittwist.sourceforge.net
+
+
+
+                                 21 April 2012                    BITTWISTE(1)
+</pre>

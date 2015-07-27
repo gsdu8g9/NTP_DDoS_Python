@@ -1,0 +1,333 @@
+.\"
+.\" bittwiste.1 - manpage for the bittwiste program
+.\" Copyright (C) 2006 - 2012 Addy Yeow Chin Heng <ayeowch@gmail.com>
+.\"
+.\" This program is free software; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License
+.\" as published by the Free Software Foundation; either version 2
+.\" of the License, or any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+.\"
+.TH BITTWISTE 1 "21 April 2012"
+.SH NAME
+.B bittwiste
+\-- pcap capture file editor
+.SH SYNOPSIS
+.B bittwiste
+[
+.B \-I
+.I input
+] [
+.B \-O
+.I output
+] [
+.B \-L
+.I layer
+] [
+.B \-X
+.I payload
+]
+.ti +10
+[
+.B -C
+] [
+.B \-M
+.I linktype
+] [
+.B \-D
+.I offset
+] [
+.B \-R
+.I range
+]
+.ti +10
+[
+.B \-S
+.I timeframe
+] [
+.B \-T
+.I header
+]
+.ti +10
+[
+.I header-specific-options
+] [
+.B \-h
+]
+.SH DESCRIPTION
+This document describes the \fIbittwiste\fP program, the \fIpcap\fP(3) capture file editor. \fIBittwiste\fP is designed to work only with Ethernet frame, e.g. link type DLT_EN10MB in \fIpcap\fP(3), with a maximum frame size of 1514 bytes which is equivalent to a MTU of 1500 bytes, 14 bytes for Ethernet header.
+.PP
+\fIBittwiste\fP can currently edit Ethernet, ARP, IP, ICMP, TCP, and UDP headers. If run with the \fB-X\fP flag, you can append your own payload after any of these headers; specified using the \fB-L\fP and \fB-T\fP flag. \fIBittwiste\fP will, if not run with the \fB-C\fP flag, recalculate the checksums for IP, ICMP, TCP, and UDP packets, except for the last fragment of a fragmented IP datagram; \fIbittwiste\fP does not currently support checksum correction for the last fragment of a fragmented IP datagram. While parsing the packets in a trace file, \fIbittwiste\fP will skip, i.e. write to output file as is, any truncated packet, for example, an ICMP packet with a captured length of 25 bytes (we need at least 28 bytes; 14 bytes for Ethernet header, minimum 20 bytes for IP header, and 4 bytes for ICMP header) does not give enough information on its ICMP header for \fIbittwiste\fP to read and modify it. In this case, you can utilize the \fB-L\fP and \fB-T\fP flag to copy the original packet up to its IP header and append your customized ICMP header and data to the packet using the \fB-X\fP flag. When specifying payload that covers the ICMP, TCP or UDP header and its data, you can use zeros, e.g. 0000 for 2 bytes of zeros, for the header checksum which is then corrected automatically by \fIbittwiste\fP.
+.PP
+In order to simplify the way options are specified, you can only edit packets of a specific type supplied to the \fB-T\fP flag per execution of \fIbittwiste\fP on a trace file. In addition, the \fB-T\fP flag must appear last among the general options which are the \fB-I\fP, \fB-O\fP, \fB-L\fP, \fB-X\fP, \fB-C\fP, \fB-M\fP, \fB-D\fP, \fB-R\fP and \fB-S\fP flag.
+.SH OPTIONS
+.TP
+.B \-I \fIinput\fP
+Input pcap based trace file.
+.TP
+.B \-O \fIoutput\fP
+Output trace file.
+.TP
+.B \-L \fIlayer\fP
+Copy up to the specified \fIlayer\fP and discard the remaining data. Value for \fIlayer\fP must be either 2, 3 or 4 where 2 for Ethernet, 3 for ARP or IP, and 4 for ICMP, TCP or UDP.
+.TP
+.B \-X \fIpayload\fP
+Append \fIpayload\fP in hex digits to the end of each packet.
+.br
+Example: \fB-X\fP 0302aad1
+.br
+\fB-X\fP flag is ignored if \fB-L\fP and \fB-T\fP flag are not specified.
+.TP
+.B \-C
+Specify this flag to disable checksum correction. Checksum correction is applicable for non-fragmented IP, ICMP, TCP, and UDP packets only.
+.TP
+.B \-M \fIlinktype\fP
+Replace the \fIlinktype\fP stored in the pcap file header. Typically, value for \fIlinktype\fP is 1 for Ethernet.
+.br
+Example: -M 12 (for raw IP), -M 51 (for PPPoE)
+.IP
+For the complete list, see:
+.br
+\fIhttp://www.tcpdump.org/linktypes.html\fP
+.TP
+.B \-D \fIoffset\fP
+Delete the specified byte \fIoffset\fP from each packet.
+.br
+First byte (starting from link layer header) starts from 1.
+.br
+\fB-L\fP, \fB-X\fP, \fB-C\fP and \fB-T\fP flag are ignored if \fB-D\fP flag is specified.
+.br
+Example: \fB-D\fP 15-40, \fB-D\fP 10 or \fB-D\fP 18-9999
+.TP
+.B \-R \fIrange\fP
+Save only the specified \fIrange\fP of packets.
+.br
+Example: \fB-R\fP 5-21 or \fB-R\fP 9
+.TP
+.B \-S \fItimeframe\fP
+Save only the packets within the specified \fItimeframe\fP with up to one-second resolution using DD/MM/YYYY,HH:MM:SS as the format for start and end time in \fItimeframe\fP.
+.br
+Example: \fB-S\fP 22/10/2006,21:47:35-24/10/2006,13:16:05
+.br
+\fB-S\fP flag is evaluated after \fB-R\fP flag.
+.TP
+.B \-T \fIheader\fP
+Edit only the specified \fIheader\fP. Possible keywords for \fIheader\fP are, \fBeth\fP, \fBarp\fP, \fBip\fP, \fBicmp\fP, \fBtcp\fP, or \fBudp\fP. \fB-T\fP flag must appear last among the general options.
+.TP
+.B \-h
+Print version information and usage.
+.TP
+\fIheader-specific-options\fP
+Each packet that matches the type supplied to the \fB-T\fP flag is modified based on the options described below:
+.IP
+Options for \fBeth\fP (RFC 894):
+.RS
+.TP
+.B \-d \fIdmac\fP or \fIomac\fP,\fInmac\fP
+.br
+Destination MAC address. Example: \fB-d\fP 00:08:55:64:65:6a
+.br
+If \fIomac\fP and \fInmac\fP are specified instead, all occurences of \fIomac\fP in the destination MAC address field will be replaced with \fInmac\fP.
+.TP
+.B \-s \fIsmac\fP or \fIomac\fP,\fInmac\fP
+.br
+Source MAC address. Example: \fB-s\fP 00:13:20:3e:ab:cf
+.br
+If \fIomac\fP and \fInmac\fP are specified instead, all occurences of \fIomac\fP in the source MAC address field will be replaced with \fInmac\fP.
+.TP
+.B \-t \fItype\fP
+EtherType. Possible keywords for type are, \fBip\fP and \fBarp\fP only.
+.TP
+Options for \fBarp\fP (RFC 826):
+.TP
+.B \-o \fIopcode\fP
+Operation code in integer value between 0 to 65535. For example, you can set \fIopcode\fP to 1 for ARP request, 2 for ARP reply.
+.TP
+.B \-s \fIsmac\fP or \fIomac\fP,\fInmac\fP
+.br
+Sender MAC address. Example: \fB-s\fP 00:13:20:3e:ab:cf
+.br
+If \fIomac\fP and \fInmac\fP are specified instead, all occurences of \fIomac\fP in the sender MAC address field will be replaced with \fInmac\fP.
+.TP
+.B \-p \fIsip\fP or \fIoip\fP,\fInip\fP
+.br
+Sender IP address. Example: \fB-p\fP 192.168.0.1
+.br
+If \fIoip\fP and \fInip\fP are specified instead, all occurences of \fIoip\fP in the sender IP address field will be replaced with \fInip\fP.
+.TP
+.B \-t \fItmac\fP or \fIomac\fP,\fInmac\fP
+.br
+Target MAC address. Example: \fB-t\fP 00:08:55:64:65:6a
+.br
+If \fIomac\fP and \fInmac\fP are specified instead, all occurences of \fIomac\fP in the target MAC address field will be replaced with \fInmac\fP.
+.TP
+.B \-q \fItip\fP or \fIoip\fP,\fInip\fP
+.br
+Target IP address. Example: \fB-q\fP 192.168.0.2
+.br
+If \fIoip\fP and \fInip\fP are specified instead, all occurences of \fIoip\fP in the target IP address field will be replaced with \fInip\fP.
+.TP
+Options for \fBip\fP (RFC 791):
+.TP
+.B \-i \fIid\fP
+.br
+Identification in integer value between 0 to 65535.
+.TP
+.B \-f \fIflags\fP
+Control flags. Possible characters for \fIflags\fP are:
+.IP
+\fB-\fP : remove all flags
+.br
+\fBr\fP : set the reserved flag
+.br
+\fBd\fP : set the don't fragment flag
+.br
+\fBm\fP : set the more fragment flag
+.IP
+Example: \fB-f d\fP
+.br
+If any of the flags is specified, all original flags are removed automatically.
+.TP
+.B \-o \fIoffset\fP
+Fragment offset in integer value between 0 to 7770. Value for \fIoffset\fP represents the number of 64-bit segments contained in earlier fragments which must not exceed 7770 (62160 bytes).
+.TP
+.B \-t \fIttl\fP
+.br
+Time to live in integer value between 0 to 255 (milliseconds).
+.TP
+.B \-p \fIproto\fP
+Protocol number in integer value between 0 to 255. Some common protocol numbers are:
+.IP
+\fB1\fP  : Internet Control Message Protocol (ICMP)
+.br
+\fB6\fP  : Transmission Control Protocol (TCP)
+.br
+\fB17\fP : User Datagram Protocol (UDP)
+.IP
+For the complete list, see:
+.br
+\fIhttp://www.iana.org/assignments/protocol-numbers\fP
+.TP
+.B \-s \fIsip\fP or \fIoip\fP,\fInip\fP
+.br
+Source IP address. Example: \fB-s\fP 192.168.0.1
+.br
+If \fIoip\fP and \fInip\fP are specified instead, all occurences of \fIoip\fP in the source IP address field will be replaced with \fInip\fP.
+.TP
+.B \-d \fIdip\fP or \fIoip\fP,\fInip\fP
+.br
+Destination IP address. Example: \fB-d\fP 192.168.0.2
+.br
+If \fIoip\fP and \fInip\fP are specified instead, all occurences of \fIoip\fP in the destination IP address field will be replaced with \fInip\fP.
+.TP
+Options for \fBicmp\fP (RFC 792):
+.TP
+.B \-t \fItype\fP
+Type of message in integer value between 0 to 255. Some common messages are:
+.IP
+\fB0\fP  : Echo reply
+.br
+\fB3\fP  : Destination unreachable
+.br
+\fB8\fP  : Echo
+.br
+\fB11\fP : Time exceeded
+.IP
+For the complete list, see:
+.br
+\fIhttp://www.iana.org/assignments/icmp-parameters\fP
+.TP
+.B \-c \fIcode\fP
+Error code for this ICMP message in integer value between 0 to 255. For example, \fIcode\fP for \fBtime exceeded\fP message may have one of the following values:
+.IP
+\fB0\fP : transit TTL exceeded
+.br
+\fB1\fP : reassembly TTL exceeded
+.IP
+For the complete list, see:
+.br
+\fIhttp://www.iana.org/assignments/icmp-parameters\fP
+.TP
+Options for \fBtcp\fP (RFC 793):
+.TP
+.B \-s\fP \fIsport\fP or \fIop\fP,\fInp\fP
+Source port number in integer value between 0 to 65535. If \fIop\fP and \fInp\fP are specified instead, all occurrences of \fIop\fP in the source port field will be replaced with \fInp\fP.
+.TP
+.B \-d\fP \fIdport\fP or \fIop\fP,\fInp\fP
+Destination port number in integer value between 0 to 65535. If \fIop\fP and \fInp\fP are specified instead, all occurrences of \fIop\fP in the destination port field will be replaced with \fInp\fP.
+.TP
+.B \-q \fIseq\fP
+.br
+Sequence number in integer value between 0 to 4294967295. If SYN control bit is set, e.g. character \fBs\fP is supplied to the \fB-f\fP flag, \fIseq\fP represents the initial sequence number (ISN) and the first data byte is ISN + 1.
+.TP
+.B \-a \fIack\fP
+.br
+Acknowledgment number in integer value between 0 to 4294967295. If ACK control bit is set, e.g. character \fBa\fP is supplied to the \fB-f\fP flag, \fIack\fP represents the value of the next sequence number that the receiver is expecting to receive.
+.TP
+.B \-f \fIflags\fP
+Control flags. Possible characters for \fIflags\fP are:
+.IP
+\fB-\fP : remove all flags
+.br
+\fBu\fP : urgent pointer field is significant
+.br
+\fBa\fP : acknowledgment field is significant
+.br
+\fBp\fP : push function
+.br
+\fBr\fP : resets the connection
+.br
+\fBs\fP : synchronizes the sequence numbers
+.br
+\fBf\fP : no more data from sender
+.IP
+Example: \fB-f s\fP
+.br
+If any of the flags is specified, all original flags are removed automatically.
+.TP
+.B \-w \fIwin\fP
+.br
+Window size in integer value between 0 to 65535. If ACK control bit is set, e.g. character \fBa\fP is supplied to the \fB-f\fP flag, \fIwin\fP represents the number of data bytes, beginning with the one indicated in the acknowledgment number field that the receiver is willing to accept.
+.TP
+.B \-u \fIurg\fP
+.br
+Urgent pointer in integer value between 0 to 65535. If URG control bit is set, e.g. character \fBu\fP is supplied to the \fB-f\fP flag, \fIurg\fP represents a pointer that points to the first data byte following the urgent data.
+.TP
+Options for \fBudp\fP (RFC 768):
+.TP
+.B \-s\fP \fIsport\fP or \fIop\fP,\fInp\fP
+Source port number in integer value between 0 to 65535. If \fIop\fP and \fInp\fP are specified instead, all occurrences of \fIop\fP in the source port field will be replaced with \fInp\fP.
+.TP
+.B \-d\fP \fIdport\fP or \fIop\fP,\fInp\fP
+Destination port number in integer value between 0 to 65535. If \fIop\fP and \fInp\fP are specified instead, all occurrences of \fIop\fP in the destination port field will be replaced with \fInp\fP.
+.RE
+.SH SEE ALSO
+bittwist(1), pcap(3), tcpdump(1)
+.SH BUGS
+File your bug report and send to:
+.IP
+Addy Yeow Chin Heng <ayeowch@gmail.com>
+.PP
+Make sure you are using the latest stable version before submitting your bug report.
+.SH COPYRIGHT
+Copyright (C) 2006 - 2012 Addy Yeow Chin Heng <ayeowch@gmail.com>
+.PP
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or any later version.
+.PP
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+.SH AUTHORS
+Original author and current maintainer:
+.IP
+Addy Yeow Chin Heng
+.PP
+The current version is available from http://bittwist.sourceforge.net
