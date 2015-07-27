@@ -1,0 +1,137 @@
+<!-- Generated with the following steps:
+1) nroff -man bittwist.1
+2) Copy the output from console into this file between the opening and closing pre tag
+3) Replace dash character
+4) Encode less than and greater than character -->
+<pre>
+BITTWIST(1)                                                        BITTWIST(1)
+
+
+
+NAME
+       bittwist -- pcap based ethernet packet generator
+
+SYNOPSIS
+       bittwist [ -dvh ] [ -i interface ] [ -s length ] [ -l loop ]
+                [ -c count ] [ -m speed ] [ -r rate ] [ -p sleep ]
+                pcap-file(s)
+
+DESCRIPTION
+       This  document describes the bittwist program, the pcap(3) based Ether-
+       net packet generator. Bittwist is designed to work  under  Ethernet  II
+       (IEEE 802.3) network with a MTU of up to 1500 bytes on 10Mbps (10Base-T
+       Ethernet) or 100Mbps (Fast Ethernet) link speed. Packets are  generated
+       from  saved  tcpdump(1)  capture file referred to as trace file in this
+       document. Some familiarity with tcpdump(1) and its  basic  options  are
+       assumed  in  this  document.  Since bittwist uses functions provided by
+       pcap(3) library, e.g.  pcap_open_live()  and  pcap_inject(),  to  write
+       packets  onto  the network, it may require that you have special privi-
+       leges, e.g. read access to /dev/bpf* on BSD or root access on Linux, to
+       generate packets or to enumerate network devices with, for example, the
+       -d flag.
+
+       Bittwist will, if not run with the -s flag, inject each  packet  up  to
+       its actual length (on-wire) instead of its captured length. If the cap-
+       tured length is less than the actual  length,  bittwist  will  pad  the
+       packet  with zeros up to its actual length prior to injection. Bittwist
+       will, if not run with the -m, -r, or -p flag,  inject  packets  from  a
+       trace  file  based  on the captured intervals, in particular, the time-
+       stamp difference between two adjacent packets,  except  for  the  first
+       packet  in a trace file, which is always injected immediately. Bittwist
+       is designed to not to interfere with the packet data; it merely read  a
+       packet and inject it as is onto the network. If modification is desired
+       prior to injection of a packet, you can use the  bittwiste(1)  program,
+       which does just that.
+
+OPTIONS
+       -d     Print a list of network interfaces available.
+
+       -v     Print timestamp for each packet.
+
+       -vv    Print timestamp and hex data for each packet.
+
+       -i interface
+              Send pcap-file(s) out onto the network through interface.
+
+       -s length
+              Packet length to send. Set length to:
+
+              0 to send the actual packet length. This is the default.
+              -1 to send the captured length.
+
+              or any other value from 14 to 1514.
+
+       -l loop
+              Send  pcap-file(s) out onto the network for loop times. Set loop
+              to 0 to send pcap-file(s) until stopped. To stop, type  Control-
+              C.
+
+       -c count
+              Send  up  to  count packets. Default is to send all packets from
+              pcap-file(s).
+
+       -m speed
+              Set interval multiplier to speed. Set speed to 0 or less to send
+              the next packet immediately. Minimum positive value for speed is
+              0.000001.
+
+       -r rate
+              Limit the sending to rate Mbps. Value for rate must be between 1
+              to  1000.  This  option  is  meant  to  limit the maximum packet
+              throughput.  If you  want  to  send  packets  at  line  rate  of
+              100Mbps, try -m 0 -r 100
+
+       -p sleep
+              Set  interval  to sleep (in seconds), ignoring the actual inter-
+              val. Value for sleep must be between 1 to 2146.
+
+       -h     Print version information and usage.
+
+SEE ALSO
+       bittwiste(1), pcap(3), tcpdump(1)
+
+BUGS
+       File your bug report and send to:
+
+              Addy Yeow Chin Heng &lt;ayeowch@gmail.com&gt;
+
+       Make sure you are using the latest  stable  version  before  submitting
+       your bug report.
+
+       If you run bittwist with -m flag set to 0 without limiting the through-
+       put with -r flag, pcap_inject() may return an error with the  following
+       error string:
+
+              send: No buffer space available
+
+       We  recommend that you specify the -r flag to limit the packet through-
+       put, e.g. -m 0 -r 100 to inject packets at a maximum rate of 100Mbps.
+
+COPYRIGHT
+       Copyright (C) 2006 - 2012 Addy Yeow Chin Heng &lt;ayeowch@gmail.com&gt;
+
+       This program is free software; you can redistribute it and/or modify it
+       under  the  terms of the GNU General Public License as published by the
+       Free Software Foundation; either version 2 of the License, or any later
+       version.
+
+       This  program  is  distributed  in the hope that it will be useful, but
+       WITHOUT ANY  WARRANTY;  without  even  the  implied  warranty  of  MER-
+       CHANTABILITY  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+       Public License for more details.
+
+       You should have received a copy of the GNU General Public License along
+       with this program; if not, write to the Free Software Foundation, Inc.,
+       51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+AUTHORS
+       Original author and current maintainer:
+
+              Addy Yeow Chin Heng
+
+       The current version is available from http://bittwist.sourceforge.net
+
+
+
+                                 21 April 2012                     BITTWIST(1)
+</pre>

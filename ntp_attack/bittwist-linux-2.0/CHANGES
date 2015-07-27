@@ -1,0 +1,165 @@
+21/04/2012: Version 2.0
+- switched to "struct pcap_sf_pkthdr" to support 64-bit platforms
+- rebuilt with libpcap 1.2.1
+- added Mac OS X distribution (author's primary platform)
+- BSD distribution no longer maintained
+- ended Bit-Twist Web Edition BETA
+- revised copyright information and manpages
+bittwistb (bridge)
+- no longer maintained on all platforms
+
+12/12/2009: Version 1.1
+- rebuilt with libpcap 1.0.0
+- revised copyright information and manpages
+- removed Eclipse dependency; requires only Cygwin environment for Windows development
+- release of bittwist(w), Bit-Twist Web Edition BETA, http://twitter.com/bittwistw
+
+26/10/2007: Version 1.0
+- revised AUTHORS, INSTALL, copyright information and manpages
+- unified source files for all supported platforms
+- moved Windows development to Eclipse IDE for C/C++ Developers + Cygwin environment
+bittwist (generator)
+- increased max. packet throughput from 1Gbps to 10Gbps (option -r)
+bittwiste (editor)
+- corrected usage of strptime()
+- use comma (,) instead of slash (/) as delimiter for all replace options
+- added a feature request;
+  replace a specific MAC address with a new MAC address for eth, arp
+- added a feature request;
+  replace a specific IP address with a new IP address for arp
+
+23/10/2006: Version 0.80
+bittwist (generator)
+- improved performance;
+  use single buffer for all packet data,
+  calculate linerate_interval only when necessary
+bittwiste (editor)
+- corrected several malloc related bugs
+- added a feature request;
+  replace the linktype stored in the pcap file header,
+  e.g. to replace raw IP linktype to Ethernet linktype,
+  bittwiste -I rawip.pcap -O rawip.1.pcap -M 1
+- added a feature request;
+  support for writing packets within a specific timeframe only,
+  e.g. bittwist -I trace.pcap -O trace.1.pcap -S 22/10/2006,21:47:35-24/10/2006,13:16:05
+
+17/09/2006: Version 0.74
+bittwiste (editor)
+- minor bug correction
+- added a feature request;
+  delete a specific byte offset from a packet,
+  bittwiste -I trace.pcap -O trace.1.pcap -D 1-14
+- added a feature request;
+  replace a specific IP address with a new IP address,
+  e.g. to replace source IP address 192.168.0.1 with 192.168.1.1,
+  bittwiste -I ip.pcap -O ip.1.pcap -T ip -s 192.168.0.1:192.168.1.1
+
+28/07/2006: Version 0.73
+- minor correction in Makefile
+- merged 180506-0.72-def.h-patch-1 (patch for OpenBSD) into BSD distribution
+bittwiste (editor)
+- minor bug correction
+- added a feature request;
+  replace a specific port number with a new port number,
+  e.g. to replace destination port 1066 with 1067,
+  bittwiste -I tcp.pcap -O tcp.1.pcap -T tcp -d 1066:1067
+misc.
+- Bit-Twist 0.72 for Windows has been released prior to this update
+
+29/04/2006: Version 0.72
+- removed definition of in_addr_t in def.h for BSD distribution
+bittwistb (bridge)
+- minor bug correction
+
+28/04/2006: Version 0.71
+bittwist (generator)
+- removed maths.h which was previously required for round(),
+  ROUND() is now defined in def.h
+- minor bug correction
+bittwistb (bridge)
+- fixed gethwaddr(), previous version does not work under Linux
+
+11/04/2006: Version 0.7
+bittwistb (bridge)
+- removed packet duplication check (based on resource hog MD5 hashing);
+  this was initially required due to a faulty logic which causes the bridge
+  to check and forward packets that are already departing from an interface
+- added explicit check for broadcast and multicast packets
+- added hash entry timeout check
+bittwiste (editor)
+- option -R range can take a single value, e.g. -R 10 instead of previous
+  requirement of -R 10-10 to save only the 10th packet
+- added support for checksum correction for payload which covers ICMP, TCP,
+  or UDP header and data
+- in def.h, #define IP_FO_MAX, 8191 changed to 7770
+misc.
+- created manpages for bittwist, bittwistb, bittwiste
+- public release: http://bittwist.sourceforge.net
+
+04/04/2006: Version 0.61
+bittwistb (bridge)
+- minor correction: when "forward to all", we are not suppose to forward a
+  packet back into the same port where we received it
+
+03/04/2006: Version 0.6
+bittwistb (bridge)
+- added pcap based program to bridge 2 or more LAN segments
+bittwiste (editor)
+- added proper handling for fragmented packets
+- skip checksum calculation for fragmented packets
+- option -R range is working now
+
+17/03/2006: Version 0.5
+bittwist (generator)
+- removed option -e timeout presented in Version 0.4 since its usage
+  is limited and we can do better by using the OS ping program
+- added option -c count
+  to send packets up to count
+bittwiste (editor)
+- full rewrite
+- added options to edit most fields in Ethernet, ARP, IP, ICMP, TCP and UDP header
+- added option -X payload
+  to support addition of payload from standard input
+- added option -L layer
+  to support writing up to specific layer only
+- added option -R range
+  to support writing of specific packets only
+
+10/03/2006: Version 0.4
+- redundant definitions in bittwist.h and bittwiste.h moved to def.h
+- change of datatype, e.g. unsigned char is now u_char
+bittwist (generator)
+- added option -e timeout
+  to allow sending packet as ping packet and check for host response
+  (currently limited to ICMP echo only, expect support for TCP in later version)
+bittwiste (editor)
+- added option -c
+  to disable/enable checksum correction
+
+25/02/2006: Version 0.3
+bittwist (generator)
+- added option -r linerate
+  to limit packet throughput at the specified line rate (1 -> 1000Mbps)
+- explicit close for pcap descriptor and file pointer removed from cleanup()
+- more details in info()
+bittwiste (editor)
+- options to change source/destination MAC, source/destination IP, TTL,
+  source/destination port, enable/disable checksum correction for
+  IP, ICMP, TCP and UDP packets
+
+21/02/2006: Version 0.2
+- removes libnet dependency
+- requires libpcap 0.9.4 (and above)
+- options: -d, -vv, -i interface, -s len, -l loop, -m speed, -p sleep, -h
+- -v for timestamp and -vv to include hex data
+- user specified interval in seconds through -p option
+- interval multiplier through -m option
+- packet length:
+  send captured length / on wire length / user specified length (14 to 1514 bytes)
+  through option -s
+- SIGINT signal handling
+
+25/01/2006: Version 0.1
+- skeleton program, uses libpcap 0.9.4 and libnet 1.1.3-RC-01
+- options: -D, -V, -i interface, -l loop
+- tested only on FreeBSD 6.0-STABLE
